@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot with Animation</title>
+    <style>
+      /* Fullscreen Container */
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+      }
+
+      .background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #8fd3f4);
+        background-size: 400% 400%;
+        animation: gradient 10s ease infinite;
+        z-index: -1;
+      }
+
+      @keyframes gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      .chat-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        max-width: 600px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
+        padding: 20px;
+      }
+
+      .chat-container h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      .chat-container .chat-box {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        height: 200px;
+        overflow-y: auto;
+        background: #f9f9f9;
+      }
+
+      .chat-container .chat-input {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .chat-container .chat-input input {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+      .chat-container .chat-input button {
+        padding: 10px 20px;
+        background: #007bff;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      .chat-container .chat-input button:hover {
+        background: #0056b3;
+      }
+
+      .message {
+        margin: 5px 0;
+      }
+
+      .user {
+        text-align: right;
+        color: #007bff;
+      }
+
+      .bot {
+        text-align: left;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background"></div>
+    <div class="chat-container">
+      <h1>College Info Chatbot</h1>
+      <div class="chat-box" id="chatBox"></div>
+      <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Ask me something..." />
+        <button id="sendBtn">Send</button>
+      </div>
+    </div>
+
+    <script>
+      const chatBox = document.getElementById("chatBox");
+      const userInput = document.getElementById("userInput");
+      const sendBtn = document.getElementById("sendBtn");
+
+      function appendMessage(message, sender) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${sender}`;
+        messageDiv.textContent = message;
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+
+      async function handleChat() {
+        const userMessage = userInput.value.trim();
+        if (!userMessage) return;
+
+        appendMessage(userMessage, "user");
+        userInput.value = "";
+
+        try {
+          const response = await fetch("http://127.0.0.1:5000/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query: userMessage }),
+          });
+
+          const data = await response.json();
+          appendMessage(data.response, "bot");
+        } catch (error) {
+          appendMessage("Error: Unable to connect to the server.", "bot");
+        }
+      }
+
+      sendBtn.addEventListener("click", handleChat);
+      userInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") handleChat();
+      });
+    </script>
+  </body>
+</html>
